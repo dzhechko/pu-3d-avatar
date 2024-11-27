@@ -1,0 +1,6 @@
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=
+# Elevenlabs
+ELEVEN_LABS_API_KEY=
+ELEVEN_LABS_VOICE_ID=nPczCjzI2devNBz1zQrb
+ELEVEN_LABS_MODEL_ID=eleven_multilingual_v2

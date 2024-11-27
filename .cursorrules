@@ -1,0 +1,4 @@
+always think step by step
+always provide enhanced logging end debugging which can be turned on and off by changing the value of a variable DEBUG (true / false)
+do not change anything in .env file!
+do not ever remove anything from the code which does not confilct with problem you are solving

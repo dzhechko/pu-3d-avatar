@@ -1,72 +1,109 @@
-import { useRef } from "react";
+import React, { useState } from "react";
 import { useSpeech } from "../hooks/useSpeech";
 
-export const ChatInterface = ({ hidden, ...props }) => {
-  const input = useRef();
-  const { tts, loading, message, startRecording, stopRecording, recording } = useSpeech();
+// Microphone icon component
+const MicrophoneIcon = ({ className = "w-6 h-6" }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    strokeWidth={1.5} 
+    stroke="currentColor" 
+    className={className}
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" 
+    />
+  </svg>
+);
 
-  const sendMessage = () => {
-    const text = input.current.value;
-    if (!loading && !message) {
-      tts(text);
-      input.current.value = "";
+export const ChatInterface = () => {
+  const [inputMessage, setInputMessage] = useState("");
+  const { 
+    sendMessage, 
+    isProcessing, 
+    message, 
+    isRecording,
+    startRecording,
+    stopRecording
+  } = useSpeech();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || isProcessing) return;
+    
+    await sendMessage(inputMessage);
+    setInputMessage("");
+  };
+
+  const handleVoiceButton = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   };
-  if (hidden) {
-    return null;
-  }
 
   return (
-    <div className="fixed top-0 left-0 right-0 bottom-0 z-10 flex justify-between p-4 flex-col pointer-events-none">
-      <div className="self-start backdrop-blur-md bg-white bg-opacity-50 p-4 rounded-lg">
-        <h1 className="font-black text-xl text-gray-700">Digital Human</h1>
-        <p className="text-gray-600">
-          {loading ? "Loading..." : "Type a message and press enter to chat with the AI."}
-        </p>
+    <div className="flex flex-col h-full">
+      {/* Status Area */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
+          <span className="text-sm text-gray-600">
+            {isProcessing ? "AI is processing..." : "Ready to chat"}
+          </span>
+        </div>
+        {isRecording && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-sm text-red-500">Recording... Click microphone to stop</span>
+          </div>
+        )}
       </div>
-      <div className="w-full flex flex-col items-end justify-center gap-4"></div>
-      <div className="flex items-center gap-2 pointer-events-auto max-w-screen-sm w-full mx-auto">
-        <button
-          onClick={recording ? stopRecording : startRecording}
-          className={`bg-gray-500 hover:bg-gray-600 text-white p-4 px-4 font-semibold uppercase rounded-md ${
-            recording ? "bg-red-500 hover:bg-red-600" : ""
-          } ${loading || message ? "cursor-not-allowed opacity-30" : ""}`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z"
-            />
-          </svg>
-        </button>
 
-        <input
-          className="w-full placeholder:text-gray-800 placeholder:italic p-4 rounded-md bg-opacity-50 bg-white backdrop-blur-md"
-          placeholder="Type a message..."
-          ref={input}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              sendMessage();
-            }
-          }}
-        />
-        <button
-          disabled={loading || message}
-          onClick={sendMessage}
-          className={`bg-gray-500 hover:bg-gray-600 text-white p-4 px-10 font-semibold uppercase rounded-md ${
-            loading || message ? "cursor-not-allowed opacity-30" : ""
-          }`}
-        >
-          Send
-        </button>
+      {/* Message Input Area */}
+      <div className="p-4 mt-auto">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <textarea
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Type your message here..."
+              className="w-full p-4 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-none bg-gray-50"
+              disabled={isProcessing || isRecording}
+            />
+            <button
+              type="button"
+              onClick={handleVoiceButton}
+              disabled={isProcessing}
+              className={`absolute right-3 bottom-3 p-3 rounded-xl transition-all
+                ${isRecording 
+                  ? 'bg-red-500 text-white hover:bg-red-600' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }
+                ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
+                transform hover:scale-105 active:scale-95
+              `}
+            >
+              <MicrophoneIcon />
+            </button>
+          </div>
+          <button
+            type="submit"
+            disabled={isProcessing || !inputMessage.trim() || isRecording}
+            className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all
+              ${isProcessing || !inputMessage.trim() || isRecording
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 transform hover:scale-[1.02] active:scale-[0.98]'
+              }
+            `}
+          >
+            {isProcessing ? "Processing..." : "Send Message"}
+          </button>
+        </form>
       </div>
     </div>
   );
