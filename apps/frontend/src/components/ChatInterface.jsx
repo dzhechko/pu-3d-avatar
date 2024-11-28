@@ -19,7 +19,7 @@ const MicrophoneIcon = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
-export const ChatInterface = () => {
+export const ChatInterface = ({ darkMode = false }) => {
   const [inputMessage, setInputMessage] = useState("");
   const { 
     sendMessage, 
@@ -49,10 +49,10 @@ export const ChatInterface = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Status Area */}
-      <div className="p-4 border-b border-gray-100">
+      <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
-          <span className="text-sm text-gray-600">
+          <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             {isProcessing ? "AI is processing..." : "Ready to chat"}
           </span>
         </div>
@@ -72,7 +72,11 @@ export const ChatInterface = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Type your message here..."
-              className="w-full p-4 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-none bg-gray-50"
+              className={`w-full p-4 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-none transition-colors
+                ${darkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500'
+                }`}
               disabled={isProcessing || isRecording}
             />
             <button
@@ -82,7 +86,9 @@ export const ChatInterface = () => {
               className={`absolute right-3 bottom-3 p-3 rounded-xl transition-all
                 ${isRecording 
                   ? 'bg-red-500 text-white hover:bg-red-600' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : darkMode
+                    ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }
                 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
                 transform hover:scale-105 active:scale-95
@@ -96,7 +102,7 @@ export const ChatInterface = () => {
             disabled={isProcessing || !inputMessage.trim() || isRecording}
             className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all
               ${isProcessing || !inputMessage.trim() || isRecording
-                ? 'bg-gray-400 cursor-not-allowed' 
+                ? `${darkMode ? 'bg-gray-700' : 'bg-gray-400'} cursor-not-allowed` 
                 : 'bg-blue-600 hover:bg-blue-700 transform hover:scale-[1.02] active:scale-[0.98]'
               }
             `}
